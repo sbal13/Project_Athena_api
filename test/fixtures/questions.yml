@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  point_value: 1
+  answer: MyString
+  type: 
+  question: MyString
+  wrong_answers: MyString
+
+two:
+  point_value: 1
+  answer: MyString
+  type: 
+  question: MyString
+  wrong_answers: MyString
