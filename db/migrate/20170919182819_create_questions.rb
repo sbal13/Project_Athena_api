@@ -1,7 +1,7 @@
 class CreateQuestions < ActiveRecord::Migration[5.1]
   def change
     create_table :questions do |t|
-      t.string :type
+      t.string :question_type
       t.string :answer
       t.string :wrong_answers
       t.integer :point_value

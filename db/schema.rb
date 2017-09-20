@@ -16,10 +16,14 @@ ActiveRecord::Schema.define(version: 20170919182819) do
   enable_extension "plpgsql"
 
   create_table "assignments", force: :cascade do |t|
-    t.string "type"
+    t.string "assignment_type"
     t.string "subject"
+    t.text "description"
+    t.string "grade"
+    t.string "difficulty"
     t.boolean "timed"
     t.float "time"
+    t.string "total_points"
     t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -27,7 +31,7 @@ ActiveRecord::Schema.define(version: 20170919182819) do
   end
 
   create_table "questions", force: :cascade do |t|
-    t.string "type"
+    t.string "question_type"
     t.string "answer"
     t.string "wrong_answers"
     t.integer "point_value"
@@ -39,10 +43,12 @@ ActiveRecord::Schema.define(version: 20170919182819) do
   create_table "users", force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"
+    t.text "description"
+    t.text "subjects"
     t.string "username"
     t.string "email"
     t.string "password_digest"
-    t.string "type"
+    t.string "user_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
