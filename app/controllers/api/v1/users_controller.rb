@@ -6,7 +6,7 @@
  			user_type: params[:type],
  			email: params[:email],
  			description: params[:description],
- 			subjects: params[:subjects].join("~*~"),
+ 			subjects: params[:subjects],
  			first_name: params[:firstName],
  			last_name: params[:lastName]
  		}

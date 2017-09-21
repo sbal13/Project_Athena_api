@@ -31,9 +31,8 @@ ActiveRecord::Schema.define(version: 20170919182819) do
   end
 
   create_table "questions", force: :cascade do |t|
-    t.string "question_type"
     t.string "answer"
-    t.string "wrong_answers"
+    t.string "choices", default: [], array: true
     t.integer "point_value"
     t.string "question"
     t.bigint "assignment_id"
@@ -44,7 +43,7 @@ ActiveRecord::Schema.define(version: 20170919182819) do
     t.string "first_name"
     t.string "last_name"
     t.text "description"
-    t.text "subjects"
+    t.text "subjects", default: [], array: true
     t.string "username"
     t.string "email"
     t.string "password_digest"
