@@ -20,7 +20,7 @@ class ApplicationController < ActionController::API
 		end
 	end
 
-	def current_user(type)
+	def current_user
 		decoded_hash = decoded_token(token)
 		if !decoded_hash.empty?
 			user_id = decoded_hash[0]["user_id"]
