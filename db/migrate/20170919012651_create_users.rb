@@ -4,6 +4,7 @@ class CreateUsers < ActiveRecord::Migration[5.1]
       t.string :first_name
       t.string :last_name
       t.text :description
+      t.string :teacher_key
       t.text :subjects, array: true, default: []
       t.string :username
       t.string :email

@@ -1,6 +1,7 @@
 class CreateAssignments < ActiveRecord::Migration[5.1]
   def change
   	create_table :assignments do |t|
+      t.string :title
       t.string :assignment_type
       t.string :subject
       t.text :description
@@ -9,7 +10,7 @@ class CreateAssignments < ActiveRecord::Migration[5.1]
       t.boolean :timed
       t.float :time
       t.string :total_points
-      t.belongs_to :user, foreign_key: true
+      t.integer :teacher_id
       
       t.timestamps
     end

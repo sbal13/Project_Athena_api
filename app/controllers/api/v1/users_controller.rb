@@ -9,6 +9,7 @@
  			subjects: params[:subjects],
  			first_name: params[:firstName],
  			last_name: params[:lastName]
+ 			teacher_key: params[:teacherKey]
  		}
 
  		user = User.new(user_params)
