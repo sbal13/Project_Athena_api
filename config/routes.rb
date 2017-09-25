@@ -9,6 +9,11 @@ Rails.application.routes.draw do
 			post '/submitassignment/:id', to: 'assignments#submit'
 			post '/addteacher', to: 'users#add_teacher'
 			get '/users/:id/assignments', to: 'assignments#teacher_assignments'
+			get '/users/:id/assignedassignments', to: 'assignments#student_assignments'
+			get '/users/:id/teachers', to: 'users#get_teachers'
+			get '/users/:id/students', to: 'users#get_students'
+			get '/users/:id/studentsassignments', to: 'assignments#all_student_assignments'
+			post '/assignments/assign', to: 'assignments#assign_assignment'
 		end
 	end
 end

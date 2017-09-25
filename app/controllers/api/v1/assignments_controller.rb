@@ -40,6 +40,7 @@
  		render json: {assignments: assignments, success: "Successfully obtained assignments"}
  	end
 
+
  	def show
  		assignment = Assignment.find(params[:id])
 
@@ -83,4 +84,42 @@
  			render json: {failure: "Didn't find that teacher!"}
  		end
  	end
+
+  	def student_assignments
+ 		student = User.find(params[:id])
+
+ 		assignments = student.issued_assignments.map do |issued|
+ 			{issued_assignments: {assignment_details: issued.assignment, details: issued}}
+ 		end
+
+ 		if student
+ 			render json: {assignments: assignments, success: "Successfully obtained student's assignments!"}
+ 		else
+ 			render json: {failure: "Didn't find that student!"}
+ 		end
+ 	end
+
+ 	def all_student_assignments
+ 		teacher = User.find(params[:id])
+ 		students = teacher.students
+
+ 		issued_assignments = students.map do |student|
+ 			student.issued_assignments
+ 		end.flatten
+
+ 		final = issued_assignments.map do |issued|
+ 			{issued_assignments: {assignment_details: issued.assignment, details: issued}}
+ 		end
+ 		
+ 		 if teacher
+ 			render json: {assignments: final, success: "Successfully obtained student's assignments!"}
+ 		else
+ 			render json: {failure: "Didn't find that student!"}
+ 		end
+ 	end
+
+ 	def assign_assignment
+ 		byebug
+ 	end
+
  end

@@ -42,9 +42,35 @@
  		user = User.find(params[:id])
 
  		if user
- 			render json: {user: user, success: "Successfully loaded user!"}
+ 			if (user.user_type == "teacher")
+ 				render json: {user: user, relations: user.students, success: "Successfully loaded user!"}
+ 			elsif (user.user_type == "student")
+ 				 render json: {user: user, relations: user.teachers, success: "Successfully loaded user!"}
+ 			end	
  		else 
  			render json: {failure: "User not loaded!"}
  		end
  	end
+
+ 	def get_teachers
+ 		student = User.find(params[:id])
+ 		if student
+ 			render json: {teachers: student.teachers, success: "Successfully obtained student's teachers!"}
+ 		else
+ 			render json: {failure: "Student not found!"}
+ 		end
+
+ 	end 	
+
+ 	def get_students
+ 		teacher = User.find(params[:id])
+ 		if teacher
+ 			render json: {students: teacher.students, success: "Successfully obtained teacher's students!"}
+ 		else
+ 			render json: {failure: "Teacher not found!"}
+ 		end
+
+ 	end
+
+
  end
