@@ -7,6 +7,8 @@ Rails.application.routes.draw do
 			post '/signup', to: 'users#create'
 			get '/getcurrentuser', to: 'auth#get_user'
 			post '/submitassignment/:id', to: 'assignments#submit'
+			post '/addteacher', to: 'users#add_teacher'
+			get '/users/:id/assignments', to: 'assignments#teacher_assignments'
 		end
 	end
 end

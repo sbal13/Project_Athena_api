@@ -62,6 +62,7 @@ ActiveRecord::Schema.define(version: 20170922204102) do
     t.string "first_name"
     t.string "last_name"
     t.text "description"
+    t.string "teacher_key"
     t.text "subjects", default: [], array: true
     t.string "username"
     t.string "email"

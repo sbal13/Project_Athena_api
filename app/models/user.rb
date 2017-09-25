@@ -4,10 +4,11 @@ class User < ApplicationRecord
 	has_many :issued_assignments, foreign_key: "student_id"
 
 
-	has_many :teacher_students
+	has_many :classes, foreign_key: "student_id", class_name: "TeacherStudent"
+	has_many :classrooms, foreign_key: "teacher_id", class_name: "TeacherStudent"
 
-	has_many :students, through: :teacher_students, foreign_key: "teacher_id"
-	has_many :teachers, through: :teacher_students, foreign_key: "student_id"
+	has_many :students, through: :classrooms
+	has_many :teachers, through: :classes
 
 
 	has_secure_password
@@ -20,7 +21,7 @@ class User < ApplicationRecord
 	end
 
 	def teacher?
-		type == "teacher"
+		:type == "teacher"
 	end
 	
 end

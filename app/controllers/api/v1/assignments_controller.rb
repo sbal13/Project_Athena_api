@@ -69,4 +69,18 @@
  		end
 
  	end
+
+ 	def teacher_assignments
+ 		teacher = User.find(params[:id])
+
+ 		assignments = teacher.assignments.map do |assignment|
+ 			{details: assignment}
+ 		end
+
+ 		if teacher
+ 			render json: {assignments: assignments, success: "Successfully obtained teacher's assignments!"}
+ 		else
+ 			render json: {failure: "Didn't find that teacher!"}
+ 		end
+ 	end
  end
