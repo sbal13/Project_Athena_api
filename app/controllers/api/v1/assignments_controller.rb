@@ -53,6 +53,7 @@
 
  	def submit
  		
+ 		issued_assignment = IssuedAssignment.find_by(assignment_id: params[:id], student_id: current_user.id)
  		assignment = Assignment.find(params[:id])
 
  		total_score = 0
@@ -61,10 +62,10 @@
  			total_score += question.point_value if question.answer == params[:answers][index]
  		end
 
- 		completedAssignment = IssuedAssignment.new(assignment: assignment, student: current_user, final_score: total_score)
+ 		
 
- 		if completedAssignment.save 
- 			render json: {assignment: completedAssignment, success: "Successfully submitted"}
+ 		if issued_assignment.update(final_score: total_score, status: "Graded")
+ 			render json: {assignment: issued_assignment, success: "Successfully submitted"}
  		else
  			render json: {failure: "Submission failed!"}
  		end
@@ -119,7 +120,19 @@
  	end
 
  	def assign_assignment
- 		byebug
+ 		assignment = Assignment.find(params[:assignment_id])
+ 		student = User.find(params[:student_id])
+
+ 		issued_assignment = IssuedAssignment.new(student: student, assignment: assignment, status: "Pending", assigned_date: DateTime.now, due_date: params[:due_date])
+
+ 		final = {issued_assignments: {assignment_details: assignment, details: issued_assignment}}
+
+ 		if issued_assignment.save
+ 			render json: {assignment: final, success: "Assignment Successful!"}
+ 		else
+ 			render json: {failure: "Assignment failed!"}
+ 		end
+
  	end
 
  end

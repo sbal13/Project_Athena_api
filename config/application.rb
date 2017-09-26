@@ -14,6 +14,8 @@ require "rails/test_unit/railtie"
 require "jwt"
 require "rest-client"
 require "bcrypt"
+require `faker`
+
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
