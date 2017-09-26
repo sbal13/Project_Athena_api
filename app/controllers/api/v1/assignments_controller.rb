@@ -124,16 +124,19 @@
  	def assign_assignment
  		assignment = Assignment.find(params[:assignment_id])
  		student = User.find(params[:student_id])
+ 		if assignment && student 
+	 		issued_assignment = IssuedAssignment.new(student: student, assignment: assignment, status: "Pending", assigned_date: DateTime.now, due_date: params[:due_date])
 
- 		issued_assignment = IssuedAssignment.new(student: student, assignment: assignment, status: "Pending", assigned_date: DateTime.now, due_date: params[:due_date])
+	 		final = {issued_assignments: {assignment_details: assignment, details: issued_assignment}}
 
- 		final = {issued_assignments: {assignment_details: assignment, details: issued_assignment}}
-
- 		if issued_assignment.save
- 			render json: {assignment: final, success: "Assignment Successful!"}
- 		else
- 			render json: {failure: "Assignment failed!"}
- 		end
+	 		if issued_assignment.save
+	 			render json: {assignment: final, success: "Assignment Successful!"}
+	 		else
+	 			render json: {failure: "Failed to save assignment!"}
+	 		end
+	 	else 
+	 		render json: {failure: "Failed to locate student or assignment!"}
+	 	end
 
  	end
 
