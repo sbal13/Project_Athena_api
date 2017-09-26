@@ -106,7 +106,9 @@
 
  		issued_assignments = students.map do |student|
  			student.issued_assignments
- 		end.flatten
+ 		end.flatten.select do |assignment|
+ 			assignment.assignment.teacher_id == teacher.id
+ 		end
 
  		final = issued_assignments.map do |issued|
  			{issued_assignments: {assignment_details: issued.assignment, details: issued}}
