@@ -5,6 +5,7 @@ class CreateQuestions < ActiveRecord::Migration[5.1]
       t.string :choices, array: true, default: []
       t.integer :point_value
       t.string :question
+      t.string :question_type
       t.belongs_to :assignment, foreign_key: true
     end
   end

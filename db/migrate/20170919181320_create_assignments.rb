@@ -11,7 +11,8 @@ class CreateAssignments < ActiveRecord::Migration[5.1]
       t.float :time
       t.string :total_points
       t.integer :teacher_id
-      
+      t.boolean :protected
+      t.integer :creator_id
       t.timestamps
     end
   end

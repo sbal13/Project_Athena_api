@@ -1,5 +1,6 @@
 class User < ApplicationRecord
 	has_many :assignments, foreign_key: "teacher_id"
+	has_many :created_assignments, foreign_key: "creator_id"
 	has_many :questions, through: :assignments
 	has_many :issued_assignments, foreign_key: "student_id"
 

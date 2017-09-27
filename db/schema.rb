@@ -26,6 +26,8 @@ ActiveRecord::Schema.define(version: 20170922204102) do
     t.float "time"
     t.string "total_points"
     t.integer "teacher_id"
+    t.boolean "protected"
+    t.integer "creator_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -34,6 +36,7 @@ ActiveRecord::Schema.define(version: 20170922204102) do
     t.integer "student_id"
     t.string "status"
     t.bigint "assignment_id"
+    t.text "given_answers", default: [], array: true
     t.float "final_score"
     t.datetime "due_date"
     t.datetime "assigned_date"
@@ -47,6 +50,7 @@ ActiveRecord::Schema.define(version: 20170922204102) do
     t.string "choices", default: [], array: true
     t.integer "point_value"
     t.string "question"
+    t.string "question_type"
     t.bigint "assignment_id"
     t.index ["assignment_id"], name: "index_questions_on_assignment_id"
   end

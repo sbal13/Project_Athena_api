@@ -9,7 +9,9 @@
  				timed: params[:timed],
  				time: params[:time],
  				title: params[:title],
- 				teacher: current_user
+ 				teacher: current_user,
+ 				creator: current_user,
+ 				protected: params[:protected]
  			)
 
  		if assignment.save 
@@ -62,9 +64,16 @@
  			total_score += question.point_value if question.answer == params[:answers][index]
  		end
 
- 		
 
- 		if issued_assignment.update(final_score: total_score, status: "Graded")
+ 		if assignment.assignment_type == "multiple choice"
+ 			status = "Graded"
+ 		else 
+ 			status = "Submitted"
+ 		end
+
+
+
+ 		if issued_assignment.update(final_score: total_score, status: status)
  			render json: {assignment: issued_assignment, success: "Successfully submitted"}
  		else
  			render json: {failure: "Submission failed!"}
@@ -124,16 +133,23 @@
  	def assign_assignment
  		assignment = Assignment.find(params[:assignment_id])
  		student = User.find(params[:student_id])
+
  		if assignment && student 
-	 		issued_assignment = IssuedAssignment.new(student: student, assignment: assignment, status: "Pending", assigned_date: DateTime.now, due_date: params[:due_date])
+ 			
+ 			if !!student.issued_assignments.find_by(assignment: assignment)
+ 				render json: {failure: "You've already assigned #{assignment.title} to #{student.username}"}
+ 			else
 
-	 		final = {issued_assignments: {assignment_details: assignment, details: issued_assignment}}
+		 		issued_assignment = IssuedAssignment.new(student: student, assignment: assignment, status: "Pending", assigned_date: DateTime.now, due_date: params[:due_date])
 
-	 		if issued_assignment.save
-	 			render json: {assignment: final, success: "Assignment Successful!"}
-	 		else
-	 			render json: {failure: "Failed to save assignment!"}
-	 		end
+		 		final = {issued_assignments: {assignment_details: assignment, details: issued_assignment}}
+
+		 		if issued_assignment.save
+		 			render json: {assignment: final, success: "Assignment Successful!"}
+		 		else
+		 			render json: {failure: "Failed to save assignment!"}
+		 		end
+		 	end
 	 	else 
 	 		render json: {failure: "Failed to locate student or assignment!"}
 	 	end
