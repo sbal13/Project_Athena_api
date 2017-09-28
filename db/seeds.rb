@@ -40,7 +40,7 @@ SUBJECTS =  [
 end
 
 User.where(user_type: "teacher").each do |teacher|
-	token = "0a5f600fc0ba417659f4ef80fe3ea55accd4e38b6ed1d93b85de42a6bbd500b6"
+	token = JSON.parse(RestClient.get("https://opentdb.com/api_token.php?command=request"))["token"]
 
 	science_questions = JSON.parse(RestClient.get("https://opentdb.com/api.php?amount=5&category=17&type=multiple&token=#{token}"))["results"]
 	history_questions =	JSON.parse(RestClient.get("https://opentdb.com/api.php?amount=5&category=23&type=multiple&token=#{token}"))["results"]
@@ -73,13 +73,28 @@ User.where(user_type: "teacher").each do |teacher|
 			question_models = questions.map do |question|
 					question["incorrect_answers"] << question["correct_answer"]
 		 			new_question = Question.create(
+		 				question_type: "multiple choice",
 		 				question: question["question"],
 		 				answer: question["correct_answer"],
 		 				choices: question["incorrect_answers"],
 		 				point_value: 10,
 		 				assignment: assignment
 		 			)
+
 		 		end
+
+		 		Question.create(
+	 				question_type: "open ended",
+	 				question: "This is open ended question",
+	 				point_value: 20,
+	 				assignment: assignment)
+
+		 		Question.create(
+	 				question_type: "essay",
+	 				question: "This is an essay question",
+	 				point_value: 50,
+	 				assignment: assignment)
+
 		end
 
 		assignment.update(total_points: assignment.questions.pluck(:point_value).reduce(:+))

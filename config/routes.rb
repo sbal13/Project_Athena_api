@@ -13,7 +13,9 @@ Rails.application.routes.draw do
 			get '/users/:id/teachers', to: 'users#get_teachers'
 			get '/users/:id/students', to: 'users#get_students'
 			get '/users/:id/studentsassignments', to: 'assignments#all_student_assignments'
+			get '/submitted/:id', to: 'assignments#submitted_assignment'
 			post '/assignments/assign', to: 'assignments#assign_assignment'
+			post '/submitted/:id/finalize', to: 'assignments#finalize_submission'
 		end
 	end
 end

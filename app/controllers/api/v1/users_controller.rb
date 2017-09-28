@@ -18,7 +18,7 @@
 
 	      render json: {user: user, jwt: issue_token(payload), success: "Welcome to Athena, #{user.username}"}
 	    else
-	      render json: {failure: "Something went wrong! Sign up failed!"}
+	      render json: {failure: user.errors}
 	    end
  	end
 

@@ -6,7 +6,7 @@
 			token = issue_token(payload)
 			render json: {user: user, jwt: token, success: "Welcome back, #{user.username}"}
 		else
-			render json: {failure: "Signin failed! Invalid username or password!"}
+			render json: {failure: "Log in failed! Username or password invalid!"}
 		end
 	end
 

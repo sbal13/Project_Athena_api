@@ -8,7 +8,9 @@ class CreateIssuedAssignments < ActiveRecord::Migration[5.1]
       t.float :final_score
       t.datetime :due_date
       t.datetime :assigned_date
-
+      t.text :teacher_comments
+      t.datetime :finalized_date
+      t.float :question_points, array: true, default: []
       t.timestamps
     end
   end

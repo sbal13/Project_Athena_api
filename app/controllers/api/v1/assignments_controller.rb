@@ -15,14 +15,25 @@
  			)
 
  		if assignment.save 
- 			new_questions = params[:questions].map do |question|
-	 			new_question = Question.create(
-	 				question: question[:question],
-	 				answer: question[:answer],
-	 				choices: question[:choices],
-	 				point_value: question[:points],
-	 				assignment: assignment
-	 			)
+ 			params[:questions].map do |question|
+	 			
+	 			if question[:questionType] === "multiple choice"
+		 			Question.create(
+		 				question_type: question[:questionType],
+		 				question: question[:question],
+		 				answer: question[:answer],
+		 				choices: question[:choices],
+		 				point_value: question[:points],
+		 				assignment: assignment
+		 			)
+		 		else
+		 			Question.create(
+		 				question_type: question[:questionType],
+		 				question: question[:question],
+		 				point_value: question[:points],
+		 				assignment: assignment
+		 			)
+		 		end
 	 		end
 
 	 		assignment.update(total_points: assignment.questions.pluck(:point_value).reduce(:+))
@@ -59,21 +70,33 @@
  		assignment = Assignment.find(params[:id])
 
  		total_score = 0
+ 		final_points_array = []
 
  		assignment.questions.each_with_index do |question, index|
- 			total_score += question.point_value if question.answer == params[:answers][index]
+ 			if question.question_type == "multiple choice"
+ 				if question.answer == params[:answers][index]
+ 					total_score += question.point_value 
+ 					final_points_array << question.point_value
+ 				else 
+ 					final_points_array << 0
+ 				end
+ 			else
+ 				final_points_array << 0
+ 			end
  		end
 
 
- 		if assignment.assignment_type == "multiple choice"
+ 		if assignment.questions.all?{|question| question.question_type == "multiple choice"}
  			status = "Graded"
+ 			final_date = DateTime.now
  		else 
  			status = "Submitted"
+ 			final_date = nil
  		end
 
 
 
- 		if issued_assignment.update(final_score: total_score, status: status)
+ 		if issued_assignment.update(final_score: total_score, question_points: final_points_array, status: status, given_answers: params[:answers], finalized_date: final_date)
  			render json: {assignment: issued_assignment, success: "Successfully submitted"}
  		else
  			render json: {failure: "Submission failed!"}
@@ -153,6 +176,32 @@
 	 	else 
 	 		render json: {failure: "Failed to locate student or assignment!"}
 	 	end
+
+ 	end
+
+ 	def submitted_assignment
+ 		issued_assignment = IssuedAssignment.find(params[:id])
+ 		assignment = issued_assignment.assignment
+ 		if issued_assignment 
+ 			render json: {issued_assignment: {assignment_details: assignment, questions: assignment.questions, details: issued_assignment}, success: "Successfully retrieved submitted assignment!"}
+ 		else
+ 			render json: {failure: "Failed to locate submitted assignment!"}
+ 		end
+
+ 	end
+
+ 	def finalize_submission
+ 		issued_assignment = IssuedAssignment.find(params[:id])
+
+ 		
+
+ 		if issued_assignment.update(question_points: params[:final_points], teacher_comments: params[:comments], final_score:  params[:final_points].reduce(:+), finalized_date: DateTime.now, status: "Graded")
+ 			render json: {assignment: issued_assignment, success: "Updated assignment!"}
+ 		else
+ 			render json: {failure: "Update of assignment failed!"}
+ 		end
+
+
 
  	end
 

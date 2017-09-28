@@ -40,6 +40,9 @@ ActiveRecord::Schema.define(version: 20170922204102) do
     t.float "final_score"
     t.datetime "due_date"
     t.datetime "assigned_date"
+    t.text "teacher_comments"
+    t.datetime "finalized_date"
+    t.float "question_points", default: [], array: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["assignment_id"], name: "index_issued_assignments_on_assignment_id"
