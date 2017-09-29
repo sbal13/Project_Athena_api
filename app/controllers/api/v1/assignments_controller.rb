@@ -154,28 +154,39 @@
  	end
 
  	def assign_assignment
- 		assignment = Assignment.find(params[:assignment_id])
- 		student = User.find(params[:student_id])
+ 		all_issued = []
+ 		messages = []
 
- 		if assignment && student 
- 			
- 			if !!student.issued_assignments.find_by(assignment: assignment)
- 				render json: {failure: "You've already assigned #{assignment.title} to #{student.username}"}
- 			else
+ 		params[:students].each do |student_id|
+ 			 student = User.find(student_id)
 
-		 		issued_assignment = IssuedAssignment.new(student: student, assignment: assignment, status: "Pending", assigned_date: DateTime.now, due_date: params[:due_date])
+ 			 if student
+	 			 params[:assignments].each do |assignment_id|
+	 			 	assignment = Assignment.find(assignment_id)
 
-		 		final = {issued_assignments: {assignment_details: assignment, details: issued_assignment}}
+	 			 	if assignment
+		 			 	issued_assignment =  IssuedAssignment.new(student: student, assignment: assignment, status: "Pending", assigned_date: DateTime.now, due_date: params[:due_date])
 
-		 		if issued_assignment.save
-		 			render json: {assignment: final, success: "Assignment Successful!"}
-		 		else
-		 			render json: {failure: "Failed to save assignment!"}
-		 		end
-		 	end
-	 	else 
-	 		render json: {failure: "Failed to locate student or assignment!"}
-	 	end
+		 			 	if IssuedAssignment.find_by(assignment_id: assignment.id, student_id: student.id)
+		 			 		messages << "You've already assigned #{assignment.title} to #{student.username}!"
+		 			 	else
+					 		if issued_assignment.save
+					 			all_issued << {issued_assignments: {assignment_details: assignment, details: issued_assignment}}
+					 		else
+					 			messages << "Failed to save assignment!"
+					 		end
+					 	end
+
+				 	else 
+			 			messages << "Failed to locate assignment!"
+				 	end
+			 	end
+			 else 
+			 	messages << "Failed to locate student!"
+			 end
+ 		end
+
+ 		render json: {assignments: all_issued, messages: messages}
 
  	end
 
@@ -192,8 +203,6 @@
 
  	def finalize_submission
  		issued_assignment = IssuedAssignment.find(params[:id])
-
- 		
 
  		if issued_assignment.update(question_points: params[:final_points], teacher_comments: params[:comments], final_score:  params[:final_points].reduce(:+), finalized_date: DateTime.now, status: "Graded")
  			render json: {assignment: issued_assignment, success: "Updated assignment!"}
