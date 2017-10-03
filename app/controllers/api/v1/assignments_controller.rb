@@ -44,8 +44,81 @@
  		end
  	end
 
+ 	def edit_assignment
+ 		old_assignment = Assignment.find(params[:id])
+
+ 		historical_assignment = nil
+
+ 		if old_assignment.issued_assignments.length > 0
+
+	 		historical_assignment = Assignment.create(
+	 				difficulty: old_assignment.difficulty,
+	 				subject: old_assignment.subject,
+	 				description: old_assignment.description,
+	 				assignment_type: old_assignment.assignment_type,
+	 				grade: old_assignment.grade,
+	 				timed: old_assignment.timed,
+	 				time: old_assignment.time,
+	 				title: old_assignment.title + " (HISTORICAL #{DateTime.now.strftime('%m/%d/%Y')})",
+	 				teacher: current_user,
+	 				creator: old_assignment.creator,
+	 				protected: old_assignment.protected,
+	 				total_points: old_assignment.total_points,
+	 				historical: true
+	 			)
+	 		old_assignment.questions.each do |question|
+	 			question.update(assignment: historical_assignment)
+	 		end
+
+	 		old_assignment.issued_assignments.each do |issued|
+	 			issued.update(assignment: historical_assignment)
+	 		end
+	 	else 
+	 		old_assignment.questions.destroy_all
+ 		end
+
+		old_assignment.update(
+			difficulty: params[:difficulty],
+			subject: params[:subject],
+			description: params[:description],
+			assignment_type: params[:assignmentType],
+			grade: params[:grade],
+			timed: params[:timed],
+			time: params[:time],
+			title: params[:title],
+			protected: params[:protected]
+		)
+
+		params[:questions].map do |question|
+			
+			if question[:questionType] === "multiple choice"
+	 			Question.create(
+	 				question_type: question[:questionType],
+	 				question: question[:question],
+	 				answer: question[:answer],
+	 				choices: question[:choices],
+	 				point_value: question[:points],
+	 				assignment: old_assignment
+	 			)
+	 		else
+	 			Question.create(
+	 				question_type: question[:questionType],
+	 				question: question[:question],
+	 				point_value: question[:points],
+	 				assignment: old_assignment
+	 			)
+	 		end
+		end
+
+		old_assignment.update(total_points: old_assignment.questions.pluck(:point_value).reduce(:+))
+		render json: {edited_assignment: {details: old_assignment}, historical_assignment: {details: historical_assignment}, success: "Test successfully saved"}
+	
+
+ 	end
+
+
  	def index
- 		assignments = Assignment.all
+ 		assignments = Assignment.all.where(historical: false)
  		assignments = assignments.map do |assignment|
  			questions = assignment.questions
  			{details: assignment, creator: assignment.teacher, questions: questions}
@@ -255,6 +328,23 @@
  			render json: {failure: "Assignment copy failed!"}
  		end
 
+ 	end
+
+ 	def delete_assignment
+ 		assignment = Assignment.find(params[:id])
+ 		assignment.questions.destroy_all
+ 		assignment.issued_assignments.destroy_all
+ 		assignment.destroy
+
+ 		render json: {success: "Successfully deleted assignment"}
+ 	end 	
+
+ 	def delete_assigned_assignment
+ 		issued_assignment = IssuedAssignment.find(params[:id])
+
+ 		issued_assignment.destroy
+
+ 		render json: {success: "Successfully deleted assigned assignment"}
  	end
 
  end
