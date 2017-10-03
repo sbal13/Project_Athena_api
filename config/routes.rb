@@ -16,6 +16,7 @@ Rails.application.routes.draw do
 			get '/submitted/:id', to: 'assignments#submitted_assignment'
 			post '/assignments/assign', to: 'assignments#assign_assignment'
 			post '/submitted/:id/finalize', to: 'assignments#finalize_submission'
+			post '/assignments/:id/copy', to: 'assignments#copy'
 		end
 	end
 end

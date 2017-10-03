@@ -38,7 +38,7 @@
 
 	 		assignment.update(total_points: assignment.questions.pluck(:point_value).reduce(:+))
 
- 			render json: {assignment: {details: assignment, creator: assignment.teacher, questions: new_questions}, success: "Test successfully saved"}
+ 			render json: {assignment: {details: assignment}, success: "Test successfully saved"}
  		else
  			render json: {failure: "Oops! Something went wrong with saving your test!"}
  		end
@@ -209,8 +209,51 @@
  		else
  			render json: {failure: "Update of assignment failed!"}
  		end
+ 	end
+ 	def copy
+ 		assignment = Assignment.find(params[:id])
 
+ 		new_assignment = Assignment.new(
+ 				difficulty: assignment.difficulty,
+ 				subject: assignment.subject,
+ 				description: assignment.description,
+ 				assignment_type: assignment.assignment_type,
+ 				grade: assignment.grade,
+ 				timed: assignment.timed,
+ 				time: assignment.time,
+ 				title: assignment.title,
+ 				teacher: current_user,
+ 				creator: assignment.creator,
+ 				protected: assignment.protected,
+ 				total_points: assignment.total_points
+ 			)
 
+ 		if new_assignment.save 
+ 			assignment.questions.map do |question|
+	 			
+	 			if question.question_type === "multiple choice"
+		 			Question.create(
+		 				question_type: question.question_type,
+		 				question: question.question,
+		 				answer: question.answer,
+		 				choices: question.choices,
+		 				point_value: question.point_value,
+		 				assignment: new_assignment
+		 			)
+		 		else
+		 			Question.create(
+		 				question_type: question.question_type,
+		 				question: question.question,
+		 				point_value: question.point_value,
+		 				assignment: new_assignment
+		 			)
+		 		end
+	 		end
+
+ 			render json: {assignment: {details: new_assignment}, success: "Assignment successfully copied"}
+ 		else
+ 			render json: {failure: "Assignment copy failed!"}
+ 		end
 
  	end
 
