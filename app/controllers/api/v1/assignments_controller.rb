@@ -64,7 +64,7 @@
 	 				total_points: old_assignment.total_points,
 	 				historical: true
 	 			)
-	 		old_assignment.questions.each do |question|
+	 		old_assignment.questions.sort_by{|question| question.id}.reverse.each do |question|
 	 			# question.update(assignment: historical_assignment)
 	 			historical_assignment.questions << question
 	 		end
@@ -167,7 +167,8 @@
  	def index
  		assignments = Assignment.all.where(historical: false)
  		assignments = assignments.map do |assignment|
- 			questions = assignment.questions
+ 			questions = assignment.questions.sort_by{|question| question.id}
+
  			{details: assignment, creator: assignment.teacher, questions: questions}
  		end
  		render json: {assignments: assignments, success: "Successfully obtained assignments"}
@@ -178,7 +179,8 @@
  		assignment = Assignment.find(params[:id])
 
  		if assignment
- 			render json: {assignment: {details: assignment, creator: assignment.creator, questions: assignment.questions}, success: "Successfully found #{assignment.id}"}
+ 			questions = assignment.questions.sort_by{|question| question.id}
+ 			render json: {assignment: {details: assignment, creator: assignment.creator, questions: questions}, success: "Successfully found #{assignment.id}"}
  		else
  			render json: {failure: "Oops! Didn't find that assignment!"}
  		end
@@ -314,7 +316,8 @@
  		issued_assignment = IssuedAssignment.find(params[:id])
  		assignment = issued_assignment.assignment
  		if issued_assignment 
- 			render json: {issued_assignment: {assignment_details: assignment, questions: assignment.questions, details: issued_assignment}, success: "Successfully retrieved submitted assignment!"}
+ 			questions = assignment.questions.sort_by{|question| question.id}
+ 			render json: {issued_assignment: {assignment_details: assignment, questions: questions, details: issued_assignment}, success: "Successfully retrieved submitted assignment!"}
  		else
  			render json: {failure: "Failed to locate submitted assignment!"}
  		end
