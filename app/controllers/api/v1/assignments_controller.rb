@@ -38,7 +38,7 @@
 
 	 		assignment.update(total_points: assignment.questions.pluck(:point_value).reduce(:+))
 
- 			render json: {assignment: {details: assignment}, success: "Test successfully saved"}
+ 			render json: {assignment: {details: assignment, creator: assignment.creator}, success: "Test successfully saved"}
  		else
  			render json: {failure: "Oops! Something went wrong with saving your test!"}
  		end
@@ -46,11 +46,9 @@
 
  	def edit_assignment
  		old_assignment = Assignment.find(params[:id])
-
  		historical_assignment = nil
-
+ 		
  		if old_assignment.issued_assignments.length > 0
-
 	 		historical_assignment = Assignment.create(
 	 				difficulty: old_assignment.difficulty,
 	 				subject: old_assignment.subject,
@@ -59,7 +57,7 @@
 	 				grade: old_assignment.grade,
 	 				timed: old_assignment.timed,
 	 				time: old_assignment.time,
-	 				title: old_assignment.title + " (HISTORICAL #{DateTime.now.strftime('%m/%d/%Y')})",
+	 				title: old_assignment.title,
 	 				teacher: current_user,
 	 				creator: old_assignment.creator,
 	 				protected: old_assignment.protected,
@@ -67,52 +65,101 @@
 	 				historical: true
 	 			)
 	 		old_assignment.questions.each do |question|
-	 			question.update(assignment: historical_assignment)
+	 			# question.update(assignment: historical_assignment)
+	 			historical_assignment.questions << question
 	 		end
+	 		old_assignment.questions = []
 
 	 		old_assignment.issued_assignments.each do |issued|
-	 			issued.update(assignment: historical_assignment)
+	 			# issued.update(assignment: historical_assignment)
+	 			historical_assignment.issued_assignments << issued
 	 		end
+
+	 		old_assignment.issued_assignments = []
+
+	 		old_assignment.save
+
+	 		old_assignment.update(
+				difficulty: params[:difficulty],
+				subject: params[:subject],
+				description: params[:description],
+				assignment_type: params[:assignmentType],
+				grade: params[:grade],
+				timed: params[:timed],
+				time: params[:time],
+				title: params[:title],
+				protected: params[:protected]
+			)
+
+			params[:questions].map do |question|
+				new_question = nil
+				if question[:questionType] === "multiple choice"
+		 			new_question = Question.create(
+		 				question_type: question[:questionType],
+		 				question: question[:question],
+		 				answer: question[:answer],
+		 				choices: question[:choices],
+		 				point_value: question[:points],
+		 				assignment: old_assignment
+		 			)
+		 		else
+		 			new_question = Question.create(
+		 				question_type: question[:questionType],
+		 				question: question[:question],
+		 				point_value: question[:points],
+		 				assignment: old_assignment
+		 			)
+		 		end
+		 		old_assignment.questions << new_question
+			end
+
+			old_assignment.update(total_points: old_assignment.questions.pluck(:point_value).reduce(:+))
+
+			render json: {edited_assignment: {details: old_assignment, creator: old_assignment.creator}, historical_assignment: {details: historical_assignment, creator: historical_assignment.creator}, success: "Test successfully saved"}
+
 	 	else 
 	 		old_assignment.questions.destroy_all
- 		end
+ 		
 
-		old_assignment.update(
-			difficulty: params[:difficulty],
-			subject: params[:subject],
-			description: params[:description],
-			assignment_type: params[:assignmentType],
-			grade: params[:grade],
-			timed: params[:timed],
-			time: params[:time],
-			title: params[:title],
-			protected: params[:protected]
-		)
+			old_assignment.update(
+				difficulty: params[:difficulty],
+				subject: params[:subject],
+				description: params[:description],
+				assignment_type: params[:assignmentType],
+				grade: params[:grade],
+				timed: params[:timed],
+				time: params[:time],
+				title: params[:title],
+				protected: params[:protected]
+			)
 
-		params[:questions].map do |question|
-			
-			if question[:questionType] === "multiple choice"
-	 			Question.create(
-	 				question_type: question[:questionType],
-	 				question: question[:question],
-	 				answer: question[:answer],
-	 				choices: question[:choices],
-	 				point_value: question[:points],
-	 				assignment: old_assignment
-	 			)
-	 		else
-	 			Question.create(
-	 				question_type: question[:questionType],
-	 				question: question[:question],
-	 				point_value: question[:points],
-	 				assignment: old_assignment
-	 			)
-	 		end
+			params[:questions].map do |question|
+				new_question = nil
+				if question[:questionType] === "multiple choice"
+		 			new_question = Question.create(
+		 				question_type: question[:questionType],
+		 				question: question[:question],
+		 				answer: question[:answer],
+		 				choices: question[:choices],
+		 				point_value: question[:points],
+		 				assignment: old_assignment
+		 			)
+		 		else
+		 			new_question = Question.create(
+		 				question_type: question[:questionType],
+		 				question: question[:question],
+		 				point_value: question[:points],
+		 				assignment: old_assignment
+		 			)
+		 		end
+		 		old_assignment.questions << new_question
+			end
+
+			old_assignment.update(total_points: old_assignment.questions.pluck(:point_value).reduce(:+))
+			render json: {edited_assignment: {details: old_assignment, creator: old_assignment.creator}, success: "Test successfully saved"}
+
 		end
 
-		old_assignment.update(total_points: old_assignment.questions.pluck(:point_value).reduce(:+))
-		render json: {edited_assignment: {details: old_assignment}, historical_assignment: {details: historical_assignment}, success: "Test successfully saved"}
-	
 
  	end
 
@@ -131,7 +178,7 @@
  		assignment = Assignment.find(params[:id])
 
  		if assignment
- 			render json: {assignment: {details: assignment, questions: assignment.questions}, success: "Successfully found #{assignment.id}"}
+ 			render json: {assignment: {details: assignment, creator: assignment.creator, questions: assignment.questions}, success: "Successfully found #{assignment.id}"}
  		else
  			render json: {failure: "Oops! Didn't find that assignment!"}
  		end
@@ -181,7 +228,7 @@
  		teacher = User.find(params[:id])
 
  		assignments = teacher.assignments.map do |assignment|
- 			{details: assignment}
+ 			{details: assignment, creator: assignment.creator}
  		end
 
  		if teacher
@@ -294,7 +341,7 @@
  				grade: assignment.grade,
  				timed: assignment.timed,
  				time: assignment.time,
- 				title: assignment.title,
+ 				title: assignment.title + " (copy)",
  				teacher: current_user,
  				creator: assignment.creator,
  				protected: assignment.protected,
@@ -323,7 +370,7 @@
 		 		end
 	 		end
 
- 			render json: {assignment: {details: new_assignment}, success: "Assignment successfully copied"}
+ 			render json: {assignment: {details: new_assignment, creator: new_assignment.creator}, success: "Assignment successfully copied"}
  		else
  			render json: {failure: "Assignment copy failed!"}
  		end

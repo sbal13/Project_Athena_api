@@ -47,7 +47,7 @@ User.where(user_type: "teacher").each do |teacher|
 	biology_questions = JSON.parse(RestClient.get("https://opentdb.com/api.php?amount=5&category=27&type=multiple&token=#{token}"))["results"]
 	english_questions = JSON.parse(RestClient.get("https://opentdb.com/api.php?amount=5&category=10&type=multiple&token=#{token}"))["results"]
 
-	all_questions= [{topic: "Science", questions: science_questions}, 
+	all_questions= [{topic: "Chemistry", questions: science_questions}, 
 					{topic: "History", questions: history_questions},
 					{topic: "Biology", questions: biology_questions},
 					{topic: "English", questions: english_questions}]
