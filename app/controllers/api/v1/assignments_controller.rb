@@ -352,7 +352,7 @@
  			)
 
  		if new_assignment.save 
- 			assignment.questions.map do |question|
+ 			assignment.questions.reverse_each do |question|
 	 			
 	 			if question.question_type === "multiple choice"
 		 			Question.create(
