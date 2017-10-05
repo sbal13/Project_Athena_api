@@ -17,6 +17,21 @@ SUBJECTS =  [
 		"foreign language",
 		"history"
 	]
+GRADES = [
+			"1st",
+			"2nd",
+			"3rd",
+			"4th",
+			"5th",
+			"6th",
+			"7th",
+			"8th",
+			"9th",
+			"10th",
+			"11th",
+			"12th",
+			"college"
+		]
 
 5.times do |x|
 	User.create(first_name: Faker::Name.first_name,
@@ -46,20 +61,30 @@ User.where(user_type: "teacher").each do |teacher|
 	history_questions =	JSON.parse(RestClient.get("https://opentdb.com/api.php?amount=5&category=23&type=multiple&token=#{token}"))["results"]
 	biology_questions = JSON.parse(RestClient.get("https://opentdb.com/api.php?amount=5&category=27&type=multiple&token=#{token}"))["results"]
 	english_questions = JSON.parse(RestClient.get("https://opentdb.com/api.php?amount=5&category=10&type=multiple&token=#{token}"))["results"]
+	math_questions = JSON.parse(RestClient.get("https://opentdb.com/api.php?amount=5&category=19&type=multiple&token=#{token}"))["results"]
+	geography_questions = JSON.parse(RestClient.get("https://opentdb.com/api.php?amount=5&category=22&type=multiple&token=#{token}"))["results"]
+	politics_questions = JSON.parse(RestClient.get("https://opentdb.com/api.php?amount=5&category=24&type=multiple&token=#{token}"))["results"]
+	mythology_questions = JSON.parse(RestClient.get("https://opentdb.com/api.php?amount=5&category=20&type=multiple&token=#{token}"))["results"]
 
-	all_questions= [{topic: "Chemistry", questions: science_questions}, 
+	all_questions = [{topic: "Chemistry", questions: science_questions}, 
 					{topic: "History", questions: history_questions},
+					{topic: "History", questions: geography_questions},
+					{topic: "History", questions: politics_questions},
+					{topic: "History", questions: mythology_questions},
+					{topic: "Math", questions: math_questions},
 					{topic: "Biology", questions: biology_questions},
 					{topic: "English", questions: english_questions}]
+	
 
+	#/--- Create assignments
 
 	all_questions.each do |question_set|
 		assignment = Assignment.new(
 	 				difficulty: 3,
 	 				subject: "#{question_set[:topic]}",
-	 				description: "nuff' said",
+	 				description: Faker::Lorem.paragraph,
 	 				assignment_type: "multiple choice",
-	 				grade: "10th",
+	 				grade: GRADES.sample,
 	 				timed: [true,false].sample,
 	 				time: 10,
 	 				title: "#{question_set[:topic]} test " + (0...99).to_a.sample.to_s,
@@ -98,11 +123,73 @@ User.where(user_type: "teacher").each do |teacher|
 		end
 
 		assignment.update(total_points: assignment.questions.pluck(:point_value).reduce(:+))
+	end
 
+	#/--- Create student-teacher relations
 
-
+	User.where(user_type: "student").sample(3).each do |student|
+		TeacherStudent.create(student: student, teacher: teacher)
 	end
 end
+
+User.where(user_type: "student").each do |student|
+	all_assignments = []
+	student.teachers.each do |teacher|
+		all_assignments.concat(teacher.assignments)
+	end
+	#/--- Doing assignment
+	all_assignments.sample((all_assignments.length*0.8).floor).each do |assignment|
+		questions = assignment.questions
+		final_answers = []
+		total_points = 0
+		point_array = []
+
+		#/--- Answering questions
+		questions.each do |question|
+
+			student_answer = ""
+			if question.question_type == 'multiple choice'
+				student_answer = question.choices.sample
+				
+				if student_answer == question.answer
+					point_array << question.point_value
+				else
+					point_array << 0
+				end
+			else 
+				student_answer = Faker::Lorem.paragraph
+				point_array << rand(0..question.point_value)
+			end
+
+			final_answers << student_answer
+		end
+
+		total_points = point_array.reduce(:+)
+
+
+		assigned_date = (DateTime.now - 30) + rand(0..60)
+		assignment_length = rand(2..15)
+		due_date = assigned_date + assignment_length
+		finalized_date = assigned_date + rand(1..assignment_length)
+
+
+		IssuedAssignment.create(
+				student: student,
+				assignment: assignment,
+				status: "Graded",
+				given_answers: final_answers,
+				final_score: total_points,
+				teacher_comments: Faker::Lorem.paragraph,
+				question_points: point_array,
+				assigned_date: assigned_date,
+				finalized_date: finalized_date,
+				due_date: due_date
+			)
+	end
+end
+
+
+
 
 
 
